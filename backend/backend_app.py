@@ -7,7 +7,17 @@ CORS(app)  # This will enable CORS for all routes
 POSTS = [
     {"id": 1, "title": "First post", "content": "This is the first post."},
     {"id": 2, "title": "Second post", "content": "This is the second post."},
+    {"id": 3, "title": "Third post", "content": "This is the third post."},
+    {"id": 4, "title": "Fourth post", "content": "This is the fourth post."},
+    {"id": 5, "title": "Fifth post", "content": "This is the fifth post."},
+    {"id": 6, "title": "Sixth post", "content": "This is the sixth post."}
 ]
+
+def find_post_by_id(post_id: int) -> dict:
+
+    post = next((post for post in POSTS if post["id"] == post_id), None)
+
+    return post
 
 
 @app.route('/api/posts', methods=['GET'])
@@ -32,6 +42,21 @@ def add_post():
         POSTS.append(new_post)
         print(f"Post with ID {new_id} added successfully.")
         return jsonify(new_post), 201
+
+
+@app.route('/api/posts/<int:id>', methods=['DELETE'])
+def delete_post(id):
+
+    post = find_post_by_id(id)
+
+    if post is None:
+        return jsonify({"error": f"Post with id {id} not found"}), 404
+
+    else:
+        POSTS.remove(post)
+        print(f"Post with id {id} has been deleted successfully.")
+        return jsonify({"message": f"Post with id {id} has been deleted successfully."}), 200
+
 
 
 if __name__ == '__main__':

@@ -4,3 +4,5 @@ __pycache__/
 
 # Ignore IDE files (IDEA, VSCode, etc.)
 .idea/
+
+.venv/
