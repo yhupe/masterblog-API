@@ -1,0 +1,6 @@
+# Ignore Pycache
+__pycache__/
+*.pyc
+
+# Ignore IDE files (IDEA, VSCode, etc.)
+.idea/
