@@ -16,13 +16,21 @@ POSTS = [
 def find_post_by_id(post_id: int) -> dict:
 
     post = next((post for post in POSTS if post["id"] == post_id), None)
-
     return post
 
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
-    return jsonify(POSTS)
+
+    sort = request.args.get('sort', None)
+    direction = request.args.get('direction', None)
+
+    # returning the database with all posts as it is, if no query parameter found
+    if sort is None and direction is None:
+        return jsonify(POSTS)
+
+    else:
+
 
 
 @app.route('/api/posts', methods=['POST'])
@@ -122,10 +130,12 @@ def search_in_posts():
         #removing redundant posts
         tuple_of_matches = tuple(list_of_matches)
 
-        return jsonify(tuple_of_matches), 200
+        matching_posts = list(tuple_of_matches)
+
+        return jsonify(matching_posts), 200
 
     else:
-        return jsonify({"Notice": f"Nothing found for '{title}' or '{content}'"}), 200
+        return jsonify(list_of_matches), 200
 
 
 
