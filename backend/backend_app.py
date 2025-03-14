@@ -5,12 +5,12 @@ app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
 
 POSTS = [
-    {"id": 1, "title": "First post", "content": "This is the first post."},
-    {"id": 2, "title": "Second post", "content": "This is the second post."},
-    {"id": 3, "title": "Third post", "content": "This is the third post."},
-    {"id": 4, "title": "Fourth post", "content": "This is the fourth post."},
-    {"id": 5, "title": "Fifth post", "content": "This is the fifth post."},
-    {"id": 6, "title": "Sixth post", "content": "This is the sixth post."}
+    {"id": 1, "title": "A", "content": "F"},
+    {"id": 2, "title": "B", "content": "O"},
+    {"id": 3, "title": "C", "content": "T"},
+    {"id": 4, "title": "D", "content": "Z"},
+    {"id": 5, "title": "E", "content": "E"},
+    {"id": 6, "title": "F", "content": "N"}
 ]
 
 def find_post_by_id(post_id: int) -> dict:
@@ -19,7 +19,7 @@ def find_post_by_id(post_id: int) -> dict:
     return post
 
 
-@app.route('/api/posts', methods=['GET'])
+@app.route('/api/posts/', methods=['GET'])
 def get_posts():
 
     sort = request.args.get('sort', None)
@@ -31,7 +31,24 @@ def get_posts():
 
     else:
 
+        if sort == 'title' and direction == 'asc':
+            sorted_posts_by_title = sorted(POSTS, key=lambda x: x["title"], reverse=False)
+            return jsonify(sorted_posts_by_title), 200
 
+        elif sort == 'title' and direction == 'desc':
+            sorted_posts_by_title = sorted(POSTS, key=lambda x: x["title"], reverse=True)
+            return jsonify(sorted_posts_by_title), 200
+
+        elif sort == 'content' and direction == 'asc':
+            sorted_posts_by_content = sorted(POSTS, key=lambda x: x["content"], reverse=False)
+            return jsonify(sorted_posts_by_content), 200
+
+        elif sort == 'content' and direction == 'desc':
+            sorted_posts_by_content = sorted(POSTS, key=lambda x: x["title"], reverse=False)
+            return jsonify(sorted_posts_by_content), 200
+
+        else:
+            return jsonify({"message": f"Sorting by these parameters or only one parameter is not possible."}), 404
 
 @app.route('/api/posts', methods=['POST'])
 def add_post():
