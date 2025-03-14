@@ -1,6 +1,7 @@
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
@@ -18,12 +19,9 @@ swagger_ui_blueprint = get_swaggerui_blueprint(
 app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
 
 POSTS = [
-    {"id": 1, "title": "A", "content": "F"},
-    {"id": 2, "title": "B", "content": "O"},
-    {"id": 3, "title": "C", "content": "T"},
-    {"id": 4, "title": "D", "content": "Z"},
-    {"id": 5, "title": "E", "content": "E"},
-    {"id": 6, "title": "F", "content": "N"}
+    {"id": 1, "title": "A", "content": "F", "author": "y.hupe", "date": "2025-11-21"},
+    {"id": 2, "title": "B", "content": "O", "author": "y.hurn", "date": "2025-12-22"},
+    {"id": 3, "title": "C", "content": "T", "author": "y.lean", "date": "2025-01-23"}
 ]
 
 def find_post_by_id(post_id: int) -> dict:
@@ -59,6 +57,23 @@ def get_posts():
         elif sort == 'content' and direction == 'desc':
             sorted_posts_by_content = sorted(POSTS, key=lambda x: x["title"], reverse=False)
             return jsonify(sorted_posts_by_content), 200
+
+        elif sort == 'author' and direction == 'asc':
+            sorted_posts_by_title = sorted(POSTS, key=lambda x: x["author"], reverse=False)
+            return jsonify(sorted_posts_by_title), 200
+
+        elif sort == 'author' and direction == 'desc':
+            sorted_posts_by_title = sorted(POSTS, key=lambda x: x["author"], reverse=True)
+            return jsonify(sorted_posts_by_title), 200
+
+        # sorting by date --> with datetime instead of alphabet
+        elif sort == 'date' and direction == 'asc':
+            sorted_posts_by_title = sorted(POSTS, key=lambda x: datetime.strptime(x["date"], "%Y-%m-%d"), reverse=False)
+            return jsonify(sorted_posts_by_title), 200
+
+        elif sort == 'date' and direction == 'desc':
+            sorted_posts_by_title = sorted(POSTS, key=lambda x: datetime.strptime(x["date"], "%Y-%m-%d"), reverse=True)
+            return jsonify(sorted_posts_by_title), 200
 
         # if only one of the two parameters is used or parameters other than 'sort' and 'direction' are used:
         else:
@@ -105,31 +120,32 @@ def update_post(id):
     data = request.get_json()
     updated_title = data.get('title', None)
     updated_content = data.get('content', None)
+    updated_author = data.get('author', None)
+    updated_date = data.get('date', None)
 
     # checking that 'old' post exists
     if post is None:
         return jsonify({"error": f"Post with id {id} not found"}), 404
 
-    # checking that either updated_title or updated_content exists
-    if updated_title is None and updated_content is None:
-        return jsonify({"error": f"Neither 'title' nor 'content' has been changed due to missing or wrong input"}), 400
+    # checking that at least one field is provided for update
+    if not any([updated_title, updated_content, updated_author, updated_date]):
+        return jsonify({"error": "No valid fields provided for update"}), 400
 
-    # checking if only one value has been requested to update
-    if 'title' in data and 'content' not in data:
+    # updating provided fields
+    if updated_title is not None:
         post['title'] = updated_title
-        print(f"Post title has been updated successfully.")
-        return jsonify(post), 200
 
-    elif 'content' in data and 'title' not in data:
+    if updated_content is not None:
         post['content'] = updated_content
-        print(f"Post content has been updated successfully.")
-        return jsonify(post), 200
 
-    # checking if both values have been requested to update
-    elif 'content' in data and 'title' in data:
-        post.update(data)
-        print(f"Post title and content have been updated successfully.")
-        return jsonify(post), 200
+    if updated_author is not None:
+        post['author'] = updated_author
+
+    if updated_date is not None:
+        post['date'] = updated_date
+
+    print(f"Post with id {id} has been updated successfully.")
+    return jsonify(post), 200
 
 
 @app.route('/api/posts/search', methods=['GET'])
@@ -137,12 +153,14 @@ def search_in_posts():
 
     title = request.args.get('title', None)
     content = request.args.get('content', None)
+    author = request.args.get('author', None)
+    date = request.args.get('date', None)
 
     list_of_matches = []
 
     # checking that either one of the search terms exist
-    if title is None and content is None:
-        return jsonify({"error": f"Bad search input, can only search for 'title' and 'content'"}), 404
+    if not any([title, content, author, date]):
+        return jsonify({"error": f"Bad search input, can only search for 'title', 'content', 'author' and 'date'"}), 404
 
     # checking if search term for title exists - looking for matches in db, not case-sensitive
     if title is not None:
@@ -154,6 +172,18 @@ def search_in_posts():
     if content is not None:
         for post in POSTS:
             if content.lower() in post['content'].lower():
+                list_of_matches.append(post)
+
+    # checking if search term for author exists - looking for matches in db, not case-sensitive
+    if author is not None:
+        for post in POSTS:
+            if author.lower() in post['author'].lower():
+                list_of_matches.append(post)
+
+    # checking if search term for date exists - looking for matches in db, not case-sensitive
+    if date is not None:
+        for post in POSTS:
+            if date in post['date']:
                 list_of_matches.append(post)
 
     if len(list_of_matches) > 0:
