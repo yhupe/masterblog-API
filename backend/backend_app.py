@@ -1,8 +1,21 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
+from flask_swagger_ui import get_swaggerui_blueprint
 
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
+
+SWAGGER_URL="/api/docs"
+API_URL="/static/masterblog.json"
+
+swagger_ui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': 'Masterblog API'
+    }
+)
+app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
 
 POSTS = [
     {"id": 1, "title": "A", "content": "F"},
@@ -18,7 +31,6 @@ def find_post_by_id(post_id: int) -> dict:
     post = next((post for post in POSTS if post["id"] == post_id), None)
     return post
 
-
 @app.route('/api/posts/', methods=['GET'])
 def get_posts():
 
@@ -31,6 +43,7 @@ def get_posts():
 
     else:
 
+        #defining the sorting when the right query parameters are found
         if sort == 'title' and direction == 'asc':
             sorted_posts_by_title = sorted(POSTS, key=lambda x: x["title"], reverse=False)
             return jsonify(sorted_posts_by_title), 200
@@ -47,6 +60,7 @@ def get_posts():
             sorted_posts_by_content = sorted(POSTS, key=lambda x: x["title"], reverse=False)
             return jsonify(sorted_posts_by_content), 200
 
+        # if only one of the two parameters is used or parameters other than 'sort' and 'direction' are used:
         else:
             return jsonify({"message": f"Sorting by these parameters or only one parameter is not possible."}), 404
 
@@ -153,7 +167,6 @@ def search_in_posts():
 
     else:
         return jsonify(list_of_matches), 200
-
 
 
 if __name__ == '__main__':

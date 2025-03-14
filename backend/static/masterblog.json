@@ -1,0 +1,144 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Masterblog API",
+    "version": "1.0.0"
+  },
+  "host": "localhost:5002",
+  "basePath": "/",
+  "schemes": ["http"],
+  "tags": [
+    {
+      "name": "Blogpost",
+      "description": "Blogpost API - CRUD operations"
+    }
+  ],
+  "paths": {
+    "/api/posts": {
+      "get": {
+        "summary": "Returns all posts, optionally sorted",
+        "tags": ["Blogpost"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "sort",
+            "in": "query",
+            "type": "string",
+            "enum": ["title", "content"],
+            "description": "Sort posts by title or content."
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "type": "string",
+            "enum": ["asc", "desc"],
+            "description": "Sort direction: ascending or descending."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new blog post",
+        "tags": ["Blogpost"],
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {"type": "string"},
+                "content": {"type": "string"}
+              },
+              "required": ["title", "content"]
+            }
+          }
+        ],
+        "responses": {
+          "201": {"description": "Post created successfully"},
+          "400": {"description": "Invalid input"}
+        }
+      }
+    },
+    "/api/posts/{id}": {
+      "delete": {
+        "summary": "Delete a blog post",
+        "tags": ["Blogpost"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {"description": "Post deleted successfully"},
+          "404": {"description": "Post not found"}
+        }
+      },
+      "put": {
+        "summary": "Update an existing blog post",
+        "tags": ["Blogpost"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {"type": "string"},
+                "content": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {"description": "Post updated successfully"},
+          "400": {"description": "Invalid input"},
+          "404": {"description": "Post not found"}
+        }
+      }
+    },
+    "/api/posts/search": {
+      "get": {
+        "summary": "Search for blog posts by title or content",
+        "tags": ["Blogpost"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "title",
+            "in": "query",
+            "type": "string",
+            "description": "Search posts by title (case-insensitive)."
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "type": "string",
+            "description": "Search posts by content (case-insensitive)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching posts returned"
+          },
+          "404": {"description": "No matches found"}
+        }
+      }
+    }
+  }
+}
