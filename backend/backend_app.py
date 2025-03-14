@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
 from datetime import datetime
+from storage import storage_handler
+
 
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
@@ -18,69 +20,62 @@ swagger_ui_blueprint = get_swaggerui_blueprint(
 )
 app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
 
-POSTS = [
-    {"id": 1, "title": "A", "content": "F", "author": "y.hupe", "date": "2025-11-21"},
-    {"id": 2, "title": "B", "content": "O", "author": "y.hurn", "date": "2025-12-22"},
-    {"id": 3, "title": "C", "content": "T", "author": "y.lean", "date": "2025-01-23"}
-]
-
-def find_post_by_id(post_id: int) -> dict:
-
-    post = next((post for post in POSTS if post["id"] == post_id), None)
-    return post
 
 @app.route('/api/posts/', methods=['GET'])
 def get_posts():
+    blogposts = storage_handler.load_json_posts('storage/blogposts.json')
 
     sort = request.args.get('sort', None)
     direction = request.args.get('direction', None)
 
     # returning the database with all posts as it is, if no query parameter found
     if sort is None and direction is None:
-        return jsonify(POSTS)
+        return jsonify(blogposts)
 
     else:
 
         #defining the sorting when the right query parameters are found
         if sort == 'title' and direction == 'asc':
-            sorted_posts_by_title = sorted(POSTS, key=lambda x: x["title"], reverse=False)
+            sorted_posts_by_title = sorted(blogposts, key=lambda x: x["title"], reverse=False)
             return jsonify(sorted_posts_by_title), 200
 
         elif sort == 'title' and direction == 'desc':
-            sorted_posts_by_title = sorted(POSTS, key=lambda x: x["title"], reverse=True)
+            sorted_posts_by_title = sorted(blogposts, key=lambda x: x["title"], reverse=True)
             return jsonify(sorted_posts_by_title), 200
 
         elif sort == 'content' and direction == 'asc':
-            sorted_posts_by_content = sorted(POSTS, key=lambda x: x["content"], reverse=False)
+            sorted_posts_by_content = sorted(blogposts, key=lambda x: x["content"], reverse=False)
             return jsonify(sorted_posts_by_content), 200
 
         elif sort == 'content' and direction == 'desc':
-            sorted_posts_by_content = sorted(POSTS, key=lambda x: x["title"], reverse=False)
+            sorted_posts_by_content = sorted(blogposts, key=lambda x: x["title"], reverse=False)
             return jsonify(sorted_posts_by_content), 200
 
         elif sort == 'author' and direction == 'asc':
-            sorted_posts_by_title = sorted(POSTS, key=lambda x: x["author"], reverse=False)
+            sorted_posts_by_title = sorted(blogposts, key=lambda x: x["author"], reverse=False)
             return jsonify(sorted_posts_by_title), 200
 
         elif sort == 'author' and direction == 'desc':
-            sorted_posts_by_title = sorted(POSTS, key=lambda x: x["author"], reverse=True)
+            sorted_posts_by_title = sorted(blogposts, key=lambda x: x["author"], reverse=True)
             return jsonify(sorted_posts_by_title), 200
 
         # sorting by date --> with datetime instead of alphabet
         elif sort == 'date' and direction == 'asc':
-            sorted_posts_by_title = sorted(POSTS, key=lambda x: datetime.strptime(x["date"], "%Y-%m-%d"), reverse=False)
+            sorted_posts_by_title = sorted(blogposts, key=lambda x: datetime.strptime(x["date"], "%Y-%m-%d"), reverse=False)
             return jsonify(sorted_posts_by_title), 200
 
         elif sort == 'date' and direction == 'desc':
-            sorted_posts_by_title = sorted(POSTS, key=lambda x: datetime.strptime(x["date"], "%Y-%m-%d"), reverse=True)
+            sorted_posts_by_title = sorted(blogposts, key=lambda x: datetime.strptime(x["date"], "%Y-%m-%d"), reverse=True)
             return jsonify(sorted_posts_by_title), 200
 
         # if only one of the two parameters is used or parameters other than 'sort' and 'direction' are used:
         else:
             return jsonify({"message": f"Sorting by these parameters or only one parameter is not possible."}), 404
 
+
 @app.route('/api/posts', methods=['POST'])
 def add_post():
+    blogposts = storage_handler.load_json_posts('storage/blogposts.json')
     new_post = request.get_json()
 
     if "title" not in new_post or len(new_post['title']) == 0:
@@ -90,10 +85,11 @@ def add_post():
         return jsonify({"error": "key 'content' must exist / can't be empty"}), 400
 
     else:
-        new_id = max(post['id'] for post in POSTS) + 1
+        new_id = max(post['id'] for post in blogposts) + 1
         new_post['id'] = new_id
 
-        POSTS.append(new_post)
+        blogposts.append(new_post)
+        storage_handler.save_json_posts('storage/blogposts.json', blogposts)
         print(f"Post with ID {new_id} added successfully.")
         return jsonify(new_post), 201
 
@@ -101,13 +97,15 @@ def add_post():
 @app.route('/api/posts/<int:id>', methods=['DELETE'])
 def delete_post(id):
 
-    post = find_post_by_id(id)
+    blogposts = storage_handler.load_json_posts('storage/blogposts.json')
+    post = storage_handler.find_post_by_id(id, blogposts)
 
     if post is None:
         return jsonify({"error": f"Post with id {id} not found"}), 404
 
     else:
-        POSTS.remove(post)
+        blogposts.remove(post)
+        storage_handler.save_json_posts('storage/blogposts.json', blogposts)
         print(f"Post with id {id} has been deleted successfully.")
         return jsonify({"message": f"Post with id {id} has been deleted successfully."}), 200
 
@@ -115,7 +113,8 @@ def delete_post(id):
 @app.route('/api/posts/<int:id>', methods=['PUT'])
 def update_post(id):
 
-    post = find_post_by_id(id)
+    blogposts = storage_handler.load_json_posts('storage/blogposts.json')
+    post = storage_handler.find_post_by_id(id, blogposts)
 
     data = request.get_json()
     updated_title = data.get('title', None)
@@ -144,12 +143,15 @@ def update_post(id):
     if updated_date is not None:
         post['date'] = updated_date
 
+    storage_handler.save_json_posts('storage/blogposts.json', blogposts)
     print(f"Post with id {id} has been updated successfully.")
     return jsonify(post), 200
 
 
 @app.route('/api/posts/search', methods=['GET'])
 def search_in_posts():
+
+    blogposts = storage_handler.load_json_posts('storage/blogposts.json')
 
     title = request.args.get('title', None)
     content = request.args.get('content', None)
@@ -164,25 +166,25 @@ def search_in_posts():
 
     # checking if search term for title exists - looking for matches in db, not case-sensitive
     if title is not None:
-        for post in POSTS:
+        for post in blogposts:
             if title.lower() in post['title'].lower():
                 list_of_matches.append(post)
 
     # checking if search term for content exists - looking for matches in db, not case-sensitive
     if content is not None:
-        for post in POSTS:
+        for post in blogposts:
             if content.lower() in post['content'].lower():
                 list_of_matches.append(post)
 
     # checking if search term for author exists - looking for matches in db, not case-sensitive
     if author is not None:
-        for post in POSTS:
+        for post in blogposts:
             if author.lower() in post['author'].lower():
                 list_of_matches.append(post)
 
     # checking if search term for date exists - looking for matches in db, not case-sensitive
     if date is not None:
-        for post in POSTS:
+        for post in blogposts:
             if date in post['date']:
                 list_of_matches.append(post)
 
