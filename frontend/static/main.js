@@ -1,8 +1,6 @@
 // Function that runs once the window is fully loaded
 window.onload = function() {
-    // Attempt to retrieve the API base URL from the local storage
     var savedBaseUrl = localStorage.getItem('apiBaseUrl');
-    // If a base URL is found in local storage, load the posts
     if (savedBaseUrl) {
         document.getElementById('api-base-url').value = savedBaseUrl;
         loadPosts();
@@ -11,62 +9,135 @@ window.onload = function() {
 
 // Function to fetch all the posts from the API and display them on the page
 function loadPosts() {
-    // Retrieve the base URL from the input field and save it to local storage
     var baseUrl = document.getElementById('api-base-url').value;
     localStorage.setItem('apiBaseUrl', baseUrl);
 
-    // Use the Fetch API to send a GET request to the /posts endpoint
     fetch(baseUrl + '/posts')
-        .then(response => response.json())  // Parse the JSON data from the response
-        .then(data => {  // Once the data is ready, we can use it
-            // Clear out the post container first
+        .then(response => response.json())
+        .then(data => {
             const postContainer = document.getElementById('post-container');
             postContainer.innerHTML = '';
 
-            // For each post in the response, create a new post element and add it to the page
             data.forEach(post => {
                 const postDiv = document.createElement('div');
                 postDiv.className = 'post';
-                postDiv.innerHTML = `<h2>${post.title}</h2><p>${post.content}</p>
-                <button onclick="deletePost(${post.id})">Delete</button>`;
+                postDiv.innerHTML = `
+                    <h2>${post.title}</h2>
+                    <p>${post.content}</p>
+                    <p><strong>Author:</strong> ${post.author || 'Unknown'}</p>
+                    <p><strong>Date:</strong> ${post.date || 'No date'}</p>
+                    <button onclick="deletePost(${post.id})">Delete</button>
+                    <button onclick="showUpdateForm(${post.id}, '${post.title}', '${post.content}', '${post.author}', '${post.date}')">Edit</button>
+                `;
                 postContainer.appendChild(postDiv);
             });
         })
-        .catch(error => console.error('Error:', error));  // If an error occurs, log it to the console
+        .catch(error => console.error('Error:', error));
 }
 
 // Function to send a POST request to the API to add a new post
 function addPost() {
-    // Retrieve the values from the input fields
     var baseUrl = document.getElementById('api-base-url').value;
     var postTitle = document.getElementById('post-title').value;
     var postContent = document.getElementById('post-content').value;
+    var postAuthor = document.getElementById('post-author').value;
 
-    // Use the Fetch API to send a POST request to the /posts endpoint
     fetch(baseUrl + '/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: postTitle, content: postContent })
+        body: JSON.stringify({
+            title: postTitle,
+            content: postContent,
+            author: postAuthor,
+            date: new Date().toISOString().split('T')[0]
+        })
     })
-    .then(response => response.json())  // Parse the JSON data from the response
+    .then(response => response.json())
     .then(post => {
         console.log('Post added:', post);
-        loadPosts(); // Reload the posts after adding a new one
+        loadPosts();
     })
-    .catch(error => console.error('Error:', error));  // If an error occurs, log it to the console
+    .catch(error => console.error('Error:', error));
 }
 
 // Function to send a DELETE request to the API to delete a post
 function deletePost(postId) {
     var baseUrl = document.getElementById('api-base-url').value;
 
-    // Use the Fetch API to send a DELETE request to the specific post's endpoint
+    fetch(baseUrl + '/posts/' + postId, { method: 'DELETE' })
+        .then(response => {
+            console.log('Post deleted:', postId);
+            loadPosts();
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// Function to update a post
+function updatePost(postId) {
+    var baseUrl = document.getElementById('api-base-url').value;
+    var updatedTitle = document.getElementById('update-title').value;
+    var updatedContent = document.getElementById('update-content').value;
+    var updatedAuthor = document.getElementById('update-author').value;
+    var updatedDate = document.getElementById('update-date').value;
+
     fetch(baseUrl + '/posts/' + postId, {
-        method: 'DELETE'
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            title: updatedTitle,
+            content: updatedContent,
+            author: updatedAuthor,
+            date: updatedDate
+        })
     })
-    .then(response => {
-        console.log('Post deleted:', postId);
-        loadPosts(); // Reload the posts after deleting one
+    .then(response => response.json())
+    .then(post => {
+        console.log('Post updated:', post);
+        loadPosts();
+        document.getElementById('update-form').style.display = 'none';
     })
-    .catch(error => console.error('Error:', error));  // If an error occurs, log it to the console
+    .catch(error => console.error('Error:', error));
+}
+
+// Function to show update form with existing values
+function showUpdateForm(postId, title, content, author, date) {
+    document.getElementById('update-form').style.display = 'block';
+    document.getElementById('update-id').value = postId;
+    document.getElementById('update-title').value = title;
+    document.getElementById('update-content').value = content;
+    document.getElementById('update-author').value = author;
+    document.getElementById('update-date').value = date;
+}
+
+// Function to search posts by title or content
+function searchPosts() {
+    var baseUrl = document.getElementById('api-base-url').value;
+    var searchTitle = document.getElementById('search-title').value;
+    var searchContent = document.getElementById('search-content').value;
+
+    var url = baseUrl + '/posts/search?';
+    if (searchTitle) url += `title=${searchTitle}&`;
+    if (searchContent) url += `content=${searchContent}`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const postContainer = document.getElementById('post-container');
+            postContainer.innerHTML = '';
+
+            data.forEach(post => {
+                const postDiv = document.createElement('div');
+                postDiv.className = 'post';
+                postDiv.innerHTML = `
+                    <h2>${post.title}</h2>
+                    <p>${post.content}</p>
+                    <p><strong>Author:</strong> ${post.author || 'Unknown'}</p>
+                    <p><strong>Date:</strong> ${post.date || 'No date'}</p>
+                    <button onclick="deletePost(${post.id})">Delete</button>
+                    <button onclick="showUpdateForm(${post.id}, '${post.title}', '${post.content}', '${post.author}', '${post.date}')">Edit</button>
+                `;
+                postContainer.appendChild(postDiv);
+            });
+        })
+        .catch(error => console.error('Error:', error));
 }

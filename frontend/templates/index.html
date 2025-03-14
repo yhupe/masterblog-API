@@ -10,18 +10,43 @@
 <body>
     <div class="container">
         <h1>📚 Blog Posts</h1>
+
+        <!-- API Base URL Input -->
         <div class="input-field">
             <input type="text" id="api-base-url" placeholder="Enter API Base URL" value="http://127.0.0.1:5002/api">
             <button onclick="loadPosts()">Load Posts</button>
         </div>
+
+        <!-- Add New Post -->
         <div class="input-field">
             <input type="text" id="post-title" placeholder="Enter Post Title">
             <input type="text" id="post-content" placeholder="Enter Post Content">
+            <input type="text" id="post-author" placeholder="Enter Author Name">
             <button onclick="addPost()">Add Post</button>
         </div>
-        <div id="post-container">
-            <!-- Blog posts will be inserted here by JavaScript -->
+
+        <!-- Search Posts -->
+        <div class="input-field">
+            <h2>🔍 Search Posts</h2>
+            <input type="text" id="search-title" placeholder="Search by Title">
+            <input type="text" id="search-content" placeholder="Search by Content">
+            <button onclick="searchPosts()">Search</button>
         </div>
+
+        <!-- Update Post Form (Hidden by Default) -->
+        <div id="update-form" class="input-field" style="display: none;">
+            <h2>✏️ Update Post</h2>
+            <input type="hidden" id="update-id">
+            <input type="text" id="update-title" placeholder="Title">
+            <input type="text" id="update-content" placeholder="Content">
+            <input type="text" id="update-author" placeholder="Author">
+            <input type="date" id="update-date">
+            <button onclick="updatePost(document.getElementById('update-id').value)">Save Changes</button>
+            <button onclick="document.getElementById('update-form').style.display='none'">Cancel</button>
+        </div>
+
+        <!-- Post Container (JavaScript will insert posts here) -->
+        <div id="post-container"></div>
     </div>
 
     <script src="static/main.js"></script>

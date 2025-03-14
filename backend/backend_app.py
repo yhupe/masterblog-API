@@ -6,7 +6,9 @@ from storage import storage_handler
 
 
 app = Flask(__name__)
-CORS(app)  # This will enable CORS for all routes
+
+#enable CORS for all routes
+CORS(app)
 
 SWAGGER_URL="/api/docs"
 API_URL="/static/masterblog.json"
