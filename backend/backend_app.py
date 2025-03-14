@@ -25,6 +25,11 @@ app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
 
 @app.route('/api/posts/', methods=['GET'])
 def get_posts():
+    """ Directing to this endpoint via GET request, all posts from storage
+    are returned in default order. By adding query parameters to the url,
+    the function will sort by certain values in either
+    descending or ascending order. """
+
     blogposts = storage_handler.load_json_posts('storage/blogposts.json')
 
     sort = request.args.get('sort', None)
@@ -38,27 +43,33 @@ def get_posts():
 
         #defining the sorting when the right query parameters are found
         if sort == 'title' and direction == 'asc':
-            sorted_posts_by_title = sorted(blogposts, key=lambda x: x["title"], reverse=False)
+            sorted_posts_by_title = sorted(blogposts, key=lambda x: x["title"],
+                                           reverse=False)
             return jsonify(sorted_posts_by_title), 200
 
         elif sort == 'title' and direction == 'desc':
-            sorted_posts_by_title = sorted(blogposts, key=lambda x: x["title"], reverse=True)
+            sorted_posts_by_title = sorted(blogposts, key=lambda x: x["title"],
+                                           reverse=True)
             return jsonify(sorted_posts_by_title), 200
 
         elif sort == 'content' and direction == 'asc':
-            sorted_posts_by_content = sorted(blogposts, key=lambda x: x["content"], reverse=False)
+            sorted_posts_by_content = sorted(blogposts, key=lambda x: x["content"],
+                                             reverse=False)
             return jsonify(sorted_posts_by_content), 200
 
         elif sort == 'content' and direction == 'desc':
-            sorted_posts_by_content = sorted(blogposts, key=lambda x: x["title"], reverse=False)
+            sorted_posts_by_content = sorted(blogposts, key=lambda x: x["title"],
+                                             reverse=False)
             return jsonify(sorted_posts_by_content), 200
 
         elif sort == 'author' and direction == 'asc':
-            sorted_posts_by_title = sorted(blogposts, key=lambda x: x["author"], reverse=False)
+            sorted_posts_by_title = sorted(blogposts, key=lambda x: x["author"],
+                                           reverse=False)
             return jsonify(sorted_posts_by_title), 200
 
         elif sort == 'author' and direction == 'desc':
-            sorted_posts_by_title = sorted(blogposts, key=lambda x: x["author"], reverse=True)
+            sorted_posts_by_title = sorted(blogposts, key=lambda x: x["author"],
+                                           reverse=True)
             return jsonify(sorted_posts_by_title), 200
 
         # sorting by date --> with datetime instead of alphabet
@@ -72,11 +83,17 @@ def get_posts():
 
         # if only one of the two parameters is used or parameters other than 'sort' and 'direction' are used:
         else:
-            return jsonify({"message": f"Sorting by these parameters or only one parameter is not possible."}), 404
+            return jsonify({"message": f"Sorting by these parameters "
+                                       f"or only one parameter is not possible."}), 404
 
 
 @app.route('/api/posts', methods=['POST'])
 def add_post():
+    """ Navigating to this endpoint via POST request, new posts
+    can be added to the database by following a given format
+    in the POST request body. All appended posts will get a
+    unique identifier (id)"""
+
     blogposts = storage_handler.load_json_posts('storage/blogposts.json')
     new_post = request.get_json()
 
@@ -98,6 +115,8 @@ def add_post():
 
 @app.route('/api/posts/<int:id>', methods=['DELETE'])
 def delete_post(id):
+    """ Via DELETE request, the unique ID as passed in the url
+     identifies the post to be deleted from the database. """
 
     blogposts = storage_handler.load_json_posts('storage/blogposts.json')
     post = storage_handler.find_post_by_id(id, blogposts)
@@ -109,11 +128,17 @@ def delete_post(id):
         blogposts.remove(post)
         storage_handler.save_json_posts('storage/blogposts.json', blogposts)
         print(f"Post with id {id} has been deleted successfully.")
-        return jsonify({"message": f"Post with id {id} has been deleted successfully."}), 200
+        return jsonify({"message": f"Post with id {id} has been deleted "
+                                   f"successfully."}), 200
 
 
 @app.route('/api/posts/<int:id>', methods=['PUT'])
 def update_post(id):
+    """ The unique ID passed along with the PUT request leads to
+    first changing and then saving changed attributes of the blog post,
+    if the user follows a certain format in the PUT request body.
+    It can be that only one or up to all four post attributes
+    such as title, author, content and date can be changed and updated."""
 
     blogposts = storage_handler.load_json_posts('storage/blogposts.json')
     post = storage_handler.find_post_by_id(id, blogposts)
@@ -152,6 +177,9 @@ def update_post(id):
 
 @app.route('/api/posts/search', methods=['GET'])
 def search_in_posts():
+    """ By passing certain keywords as query parameter to this endpoint, the
+    return will be a json-ified list of all posts matching the search criteria
+    as passed in within the query parameter"""
 
     blogposts = storage_handler.load_json_posts('storage/blogposts.json')
 
@@ -164,7 +192,8 @@ def search_in_posts():
 
     # checking that either one of the search terms exist
     if not any([title, content, author, date]):
-        return jsonify({"error": f"Bad search input, can only search for 'title', 'content', 'author' and 'date'"}), 404
+        return jsonify({"error": f"Bad search input, can only search "
+                                 f"for 'title', 'content', 'author' and 'date'"}), 404
 
     # checking if search term for title exists - looking for matches in db, not case-sensitive
     if title is not None:
