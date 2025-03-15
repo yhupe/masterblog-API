@@ -33,7 +33,7 @@ python frontend/frontend_app.py
 
 ## Other things
 
-Tried my API? I'd love to hear your feedback!   I'm still at the start of my programming journey, so any thoughts or suggestions would mean a lot. Or if you encounter any bugs or unexpected behaviour which I haven't mentioned in my swagger docs, feel free to give me a hint!
-Thanks! 
+__Tried my API?__ <br> I'd love to hear your feedback!   I'm still at the start of my programming journey, so any thoughts or suggestions would mean a lot. Or if you encounter any bugs or unexpected behaviour which I haven't mentioned in my swagger docs, feel free to give me a hint!
+<br>__Thanks!__
 
 ## 🤙🏼
