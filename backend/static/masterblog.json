@@ -24,8 +24,8 @@
             "name": "sort",
             "in": "query",
             "type": "string",
-            "enum": ["title", "content"],
-            "description": "Sort posts by title or content."
+            "enum": ["title", "content", "author", "date"],
+            "description": "Sort posts by title, content, author, or date."
           },
           {
             "name": "direction",
@@ -54,9 +54,11 @@
               "type": "object",
               "properties": {
                 "title": {"type": "string"},
-                "content": {"type": "string"}
+                "content": {"type": "string"},
+                "author": {"type": "string"},
+                "date": {"type": "string", "format": "date"}
               },
-              "required": ["title", "content"]
+              "required": ["title", "content", "author", "date"]
             }
           }
         ],
@@ -101,7 +103,9 @@
               "type": "object",
               "properties": {
                 "title": {"type": "string"},
-                "content": {"type": "string"}
+                "content": {"type": "string"},
+                "author": {"type": "string"},
+                "date": {"type": "string", "format": "date"}
               }
             }
           }
@@ -115,7 +119,7 @@
     },
     "/api/posts/search": {
       "get": {
-        "summary": "Search for blog posts by title or content",
+        "summary": "Search for blog posts by title, content, author, or date",
         "tags": ["Blogpost"],
         "produces": ["application/json"],
         "parameters": [
@@ -130,6 +134,19 @@
             "in": "query",
             "type": "string",
             "description": "Search posts by content (case-insensitive)."
+          },
+          {
+            "name": "author",
+            "in": "query",
+            "type": "string",
+            "description": "Search posts by author (case-insensitive)."
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "type": "string",
+            "format": "date",
+            "description": "Search posts by date (YYYY-MM-DD)."
           }
         ],
         "responses": {
