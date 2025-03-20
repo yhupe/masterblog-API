@@ -6,7 +6,8 @@ def load_json_posts(file_path: str) -> list[dict]:
     """Function to load blogposts from the storage. """
 
     if not os.path.exists(file_path):
-        print(f"Error: File '{file_path}' does not exist. Will return an empty list instead.")
+        print(f"Error: File '{file_path}' does not exist. "
+              f"Will return an empty list instead.")
         return []
 
     try:
@@ -14,13 +15,15 @@ def load_json_posts(file_path: str) -> list[dict]:
             blogposts = json.load(fileobj)
 
         if not isinstance(blogposts, list):
-            print(f"Error: File '{file_path}' does not contain valid json list. Will return empty list instead.")
+            print(f"Error: File '{file_path}' does not contain valid json list. "
+                  f"Will return empty list instead.")
             return []
 
         return blogposts
 
     except json.JSONDecodeError:
-        print(f"Error: file '{file_path}' contains invalid JSON. Will return empty list instead")
+        print(f"Error: file '{file_path}' contains invalid JSON. "
+              f"Will return empty list instead")
         return []
     except Exception as e:
         print(f"Unexpected error while loading file '{file_path}': {e}")

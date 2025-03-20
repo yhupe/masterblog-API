@@ -12,5 +12,12 @@
         "author": "Anna",
         "content": "I like yoga and pilates and sometimes working out with Hannes",
         "date": "1996-11-21"
+    },
+    {
+        "title": "Test post request",
+        "content": "test test test",
+        "author": "Hannes",
+        "date": "2025-03-20",
+        "id": 4
     }
 ]

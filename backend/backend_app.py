@@ -30,7 +30,7 @@ def get_posts():
     the function will sort by certain values in either
     descending or ascending order. """
 
-    blogposts = storage_handler.load_json_posts('storage/blogposts.json')
+    blogposts = storage_handler.load_json_posts('backend/storage/blogposts.json')
 
     sort = request.args.get('sort', None)
     direction = request.args.get('direction', None)
@@ -94,7 +94,7 @@ def add_post():
     in the POST request body. All appended posts will get a
     unique identifier (id)"""
 
-    blogposts = storage_handler.load_json_posts('storage/blogposts.json')
+    blogposts = storage_handler.load_json_posts('backend/storage/blogposts.json')
     new_post = request.get_json()
 
     if "title" not in new_post or len(new_post['title']) == 0:
@@ -108,7 +108,7 @@ def add_post():
         new_post['id'] = new_id
 
         blogposts.append(new_post)
-        storage_handler.save_json_posts('storage/blogposts.json', blogposts)
+        storage_handler.save_json_posts('backend/storage/blogposts.json', blogposts)
         print(f"Post with ID {new_id} added successfully.")
         return jsonify(new_post), 201
 
@@ -118,7 +118,7 @@ def delete_post(id):
     """ Via DELETE request, the unique ID as passed in the url
      identifies the post to be deleted from the database. """
 
-    blogposts = storage_handler.load_json_posts('storage/blogposts.json')
+    blogposts = storage_handler.load_json_posts('backend/storage/blogposts.json')
     post = storage_handler.find_post_by_id(id, blogposts)
 
     if post is None:
@@ -126,7 +126,7 @@ def delete_post(id):
 
     else:
         blogposts.remove(post)
-        storage_handler.save_json_posts('storage/blogposts.json', blogposts)
+        storage_handler.save_json_posts('backend/storage/blogposts.json', blogposts)
         print(f"Post with id {id} has been deleted successfully.")
         return jsonify({"message": f"Post with id {id} has been deleted "
                                    f"successfully."}), 200
@@ -140,7 +140,7 @@ def update_post(id):
     It can be that only one or up to all four post attributes
     such as title, author, content and date can be changed and updated."""
 
-    blogposts = storage_handler.load_json_posts('storage/blogposts.json')
+    blogposts = storage_handler.load_json_posts('backend/storage/blogposts.json')
     post = storage_handler.find_post_by_id(id, blogposts)
 
     data = request.get_json()
@@ -170,7 +170,7 @@ def update_post(id):
     if updated_date is not None:
         post['date'] = updated_date
 
-    storage_handler.save_json_posts('storage/blogposts.json', blogposts)
+    storage_handler.save_json_posts('backend/storage/blogposts.json', blogposts)
     print(f"Post with id {id} has been updated successfully.")
     return jsonify(post), 200
 
@@ -181,7 +181,7 @@ def search_in_posts():
     return will be a json-ified list of all posts matching the search criteria
     as passed in within the query parameter"""
 
-    blogposts = storage_handler.load_json_posts('storage/blogposts.json')
+    blogposts = storage_handler.load_json_posts('backend/storage/blogposts.json')
 
     title = request.args.get('title', None)
     content = request.args.get('content', None)
