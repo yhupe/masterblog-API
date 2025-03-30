@@ -58,7 +58,7 @@ def get_posts():
             return jsonify(sorted_posts_by_content), 200
 
         elif sort == 'content' and direction == 'desc':
-            sorted_posts_by_content = sorted(blogposts, key=lambda x: x["title"],
+            sorted_posts_by_content = sorted(blogposts, key=lambda x: x["content"],
                                              reverse=False)
             return jsonify(sorted_posts_by_content), 200
 
@@ -104,9 +104,12 @@ def add_post():
         return jsonify({"error": "key 'content' must exist / can't be empty"}), 400
 
     else:
-        new_id = max(post['id'] for post in blogposts) + 1
-        new_post['id'] = new_id
+        if blogposts:
+            new_id = max(post['id'] for post in blogposts) + 1
+        else:
+            new_id = 1
 
+        new_post['id'] = new_id
         blogposts.append(new_post)
         storage_handler.save_json_posts('backend/storage/blogposts.json', blogposts)
         print(f"Post with ID {new_id} added successfully.")
